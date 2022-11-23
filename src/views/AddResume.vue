@@ -1,36 +1,52 @@
 <template>
   <main>
+    <!-- Alert box -->
+    <v-alert v-model="alert"
+      dense
+      text
+      type="success"
+    >
+      Successfully saved
+    </v-alert>
+    <!-- Subheading -->
     <div class="back-option">
       <router-link to="/"> &lt Back to all resume list</router-link>
       <h4 class="sub-heading">Create resume content</h4>
     </div>
     <div>
-      <v-form v-model="valid">
-        <basic_details
-        @basic="getBasicDetails"
+    <!-- Resume form -->
+      <v-form ref="form"
+              lazy-validation
+      >
+        <BasicDetails
+         @basic="getBasicDetails"
         />  
-        <location @location="getLocationDetails"/>
-
-          <work_experience_details @experience="getWorkExperience"
-          :work_experience="item"/>
-
-        
-          <education_details @education="getEducationDetails"/>
-
-
-          <project_details @project="getProjectDetails"/>
-       
-    
-        <skill_details 
-        @skill="getSkillDetails"/> 
-
-        <social_media_details @social_media="getSocialMediaDetails"/>
-    
+        <LocationDetails 
+         @location="getLocationDetails"
+         />
+        <WorkExperienceDetails 
+         @experience="getWorkExperience"
+        />
+        <EducationDetails 
+         @education="getEducationDetails"
+         />
+        <ProjectDetails 
+         @project="getProjectDetails"
+         />
+        <SkillDetails
+         @skill="getSkillDetails"
+         /> 
+        <SocialMediaDetails 
+         @social_media="getSocialMediaDetails"
+         />
+         <!-- Buttons -->
         <div class="button">
-          <v-btn id="cancel-button">
+          <v-btn id="cancel-button" 
+            @click="goBack">
             Cancel
           </v-btn>
-          <v-btn id="save-button" @click="createResume">
+          <v-btn id="save-button" 
+            @click="[createResume(), validate()]">
             Save
           </v-btn>
         </div>
@@ -40,25 +56,25 @@
   </template>
   
   <script>
-  import basic_details from "@/components/basic_details.vue"
-  import location from "@/components/address.vue"
-  import education_details from "@/components/education_details.vue"
-  import project_details from "@/components/project_details.vue"
-  import work_experience_details from "@/components/work_experience_details.vue"
-  import skill_details from "@/components/skill_details.vue"
-  import social_media_details from "@/components/social_media_details.vue"
+  import BasicDetails from "@/components/BasicDetails.vue"
+  import LocationDetails from "@/components/LocationDetails.vue"
+  import EducationDetails from "@/components/EducationDetails.vue"
+  import ProjectDetails from "@/components/ProjectDetails.vue"
+  import WorkExperienceDetails from "@/components/WorkExperienceDetails.vue"
+  import SkillDetails from "@/components/SkillDetails.vue"
+  import SocialMediaDetails from "@/components/SocialMediaDetails.vue"
   import axios from 'axios'
 
   export default{
     name:"AddResume",
     components:{
-      basic_details,
-      location,
-      education_details,
-      project_details,
-      work_experience_details,
-      skill_details,
-      social_media_details,
+      BasicDetails,
+      LocationDetails,
+      EducationDetails,
+      ProjectDetails,
+      WorkExperienceDetails,
+      SkillDetails,
+      SocialMediaDetails,
     },
     data() {
     return{
@@ -67,164 +83,96 @@
         phone:'',
         image:'',
         summary:'',
-        address:'',
-        street:'',
-        city:'',
-        country:'',
-        pincode:'',
-        qualification:'',
-        institute_name:'',
-        course_name:'',
-        start_date:new Date(),
-        end_date: new Date(),
-        education_start_date:'',
-        education_end_date:'',
-        organization:'',
-        job_role:'',
-        job_location:'',
-        key_roles:'',
-        location:'',
-        project_title:'',
-        skills:'',
-        description:'',
-        skill_name:'',
-        skill_level:'',
-        network:'',
-        user_name:'',
-        url:'',
-        // skill:[{skill_name:'',skill_level:''},],
-        // education:[{qualification:'',course_name:'',institute_name:'',location:'',education_start_date:'',education_end_date:''}],
-        // work_experience:[{organization:'',job_role:'',key_roles:'',job_location:'',start_date:'',end_date:''}],
-        // project:[{project_title:'',skills:'',description:''}],
-        // social_media:[{network:'',user_name:'',url:''}]
-      }
-      
-
+        alert:false,
+        skill:[{skill_name:'',skill_level:''}],
+        locationList:[{address:'',street:'',country:'',pincode:'',city:''}],
+        workExperienceList:[{organization:'',job_role:'',job_location:'',key_roles:'',start_date:'',end_date:''}],
+        educationDetailsList:[{qualification:'',course_name:'',location:'',start_date:'',end_date:'',institute_name:''}],
+        ProjectDetailsList:[{project_title:'',skills:'',description:''}],
+        socialMediaList:[{network:'',user_name:'',url:''}],
+        isValid:true
+      }  
     },
   methods:{
+    goBack(){
+      this.$router.push('/')
+    },
+    validate () {
+        this.$refs.form.validate()
+        window.scrollTo(0,0)
+    },
     getBasicDetails(data) {
       this.name=data.name
       this.email=data.email
       this.phone=data.phone
       this.image=data.image
       this.summary=data.summary
-      console.log(this.email);
     },
     getLocationDetails(data) {
-      this.address=data.address
-      this.city=data.city
-      this.street=data.street
-      this.country=data.country
-      this.pincode=data.pincode
+      this.locationList=data
     }, 
     getEducationDetails(data) {
-      this.qualification=data.qualification
-      this.institute_name=data.institute_name
-      this.location=data.location
-      this.course_name=data.course_name
-      this.education_start_date=data.start_date
-      this.education_end_date=data.end_date
+      this.educationDetailsList=data
     },
-    getWorkExperience(data, index){
-      this.organization=data.organization
-      this.job_role=data.job_role
-      this.key_roles=data.key_roles
-      this.job_location=data.job_location
-      this.start_date=data.start_date
-      this.end_date=data.end_date
-      // this.work_experience[index]=data
-
+    getWorkExperience(data){
+      this.workExperienceList=data
     },
     getProjectDetails(data){
-      this.project_title=data.project_title
-      this.skills=data.skills
-      this.description=data.description
+      this.ProjectDetailsList=data
     },
-    getSkillDetails(data){
-      // let newData = []
-      // newData.push(data)
-      // console.log(newData)
-      this.skill_name=data.skill_name
-      this.skill_level=data.skill_level   
+    getSkillDetails(data){  
+      this.skill=data
     },
     getSocialMediaDetails(data){
-      this.network=data.network
-      this.user_name=data.user_name
-      this.url=data.url
-
+      this.socialMediaList=data
     },
+   
     async createResume() {
-        console.log("Hello")
         const basicDetails = {
         name: this.name,
         email: this.email,
         phone: this.phone,
         image:this.image,
         summary:this.summary,
-        location_details:[
-          {
-            address: this.address,
-            city: this.city,
-            street: this.street,
-            country:this.country,
-            pincode:this.pincode
-          }
-        ],
-        education_details:[
-          {
-            qualification:this.qualification,
-            institute_name:this.institute_name,
-            location:this.location,
-            course_name:this.course_name,
-            start_date:this.education_start_date,
-            end_date:this.education_end_date
-          },
-        ],
-        work_experience:[
-          {
-            organization:this.organization,
-            job_role:this.job_role,
-            key_roles:this.key_roles,
-            job_location:this.job_location,
-            start_date:this.start_date,
-            end_date:this.end_date,
-          }
-        ],
-        // work_experience:this.work_experience,
-        
-        project_details:[
-          {
-            project_title:this.project_title,
-            skills:this.skills,
-            description:this.description
-          }
-        ],
-        skills:[
-          {
-            skill_name:this.skill_name,
-            skill_level:this.skill_level
-          }
-        ],
-        // skills:this.skill,
-        social_media:[
-          {
-            network:this.network,
-            user_name:this.user_name,
-            url:this.url
-          }
-        ]
+        location_details:this.locationList,
+       
+        education_details:this.educationDetailsList,
+       
+        work_experience:this.workExperienceList,
+       
+        project_details:this.ProjectDetailsList,
+
+        skills:this.skill,
+       
+        social_media:this.socialMediaList
 
         }
-        console.log(basicDetails)
-        await axios.post(`http://127.0.0.1:8000/new-resume`, basicDetails).then((res) =>{
-          
-          this.alert=true
+       
+       await axios.post(`http://127.0.0.1:8000/new-resume`, basicDetails).then((res) =>{  
+          console.log(res.data)
+          if(res.data['data']==='inserted'){
+            this.alert=true
+            window.scrollTo(0,0)
+          }
+          else{
+            this.alert=false
+          } 
         }).catch((err) => {
           console.log(err)
-        })
-        
-      }, 
+        }) 
+      },
+      hide_alert: function (event) {
+      window.setInterval(() => {
+        this.alert = false;
+        console.log("hide alert after 6 seconds");
+      }, 6000)    
+    },
+    },
+    mounted() {
+    if(alert){
+      this.hide_alert();
     }
+  }
   }
 </script>
 
@@ -238,6 +186,7 @@
 .sub-heading{
   padding-top: 7px;
   padding-bottom: 7px;
+  color:#00897B;
 }
 .button{
   display:flex;
@@ -246,13 +195,18 @@
 #save-button, #cancel-button{
   width: 90px;
   padding: 0;
-  margin: 18px;
+  margin: 18px; 
+}
+#cancel-button{
+  color:#0097A7;
 }
 #save-button{
   background-color: #0097A7;
+  color: white;
 }
 #save-button:hover{
   background-color:#26C6DA;
 }
+
 </style>
   
